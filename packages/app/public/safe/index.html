@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenCode Safe Update Console</title>
+    <style>
+      :root {
+        --bg: #f5f2eb;
+        --bg-2: #efe9de;
+        --ink: #2c1f1a;
+        --ink-soft: #5d4a40;
+        --panel: #fffdfa;
+        --line: #d8c7b7;
+        --brand: #9d4b2d;
+        --brand-2: #1f6a6a;
+        --ok: #1f7a3b;
+        --warn: #9d4b2d;
+        --shadow: 0 14px 40px rgba(44, 31, 26, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: "IBM Plex Sans", "Source Sans 3", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 90% 10%, rgba(31, 106, 106, 0.14), transparent 42%),
+          radial-gradient(circle at 0% 100%, rgba(157, 75, 45, 0.16), transparent 46%),
+          linear-gradient(180deg, var(--bg), var(--bg-2));
+      }
+
+      .wrap {
+        max-width: 1020px;
+        margin: 0 auto;
+        padding: 28px 18px 56px;
+      }
+
+      .hero {
+        background: linear-gradient(120deg, rgba(157, 75, 45, 0.11), rgba(31, 106, 106, 0.12));
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: var(--shadow);
+      }
+
+      h1 {
+        margin: 0;
+        font:
+          700 29px/1.15 "Space Grotesk",
+          "Segoe UI",
+          sans-serif;
+      }
+
+      .sub {
+        margin: 10px 0 0;
+        color: var(--ink-soft);
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      button,
+      select,
+      input {
+        font:
+          600 13px/1.2 "IBM Plex Sans",
+          sans-serif;
+      }
+
+      .pill {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 999px;
+        padding: 8px 13px;
+        color: var(--ink);
+      }
+
+      .pill[data-active="true"] {
+        border-color: var(--brand);
+        background: color-mix(in srgb, var(--brand) 13%, white);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--panel);
+        padding: 14px;
+      }
+
+      .card h3 {
+        margin: 0;
+        font:
+          700 18px/1.2 "Space Grotesk",
+          sans-serif;
+      }
+
+      .card p {
+        margin: 8px 0 0;
+        color: var(--ink-soft);
+      }
+
+      .controls {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 14px;
+        padding: 14px;
+      }
+
+      .panel h2 {
+        margin: 0 0 10px;
+        font:
+          700 20px/1.2 "Space Grotesk",
+          sans-serif;
+      }
+
+      .label {
+        margin: 10px 0 6px;
+        color: var(--ink-soft);
+        font-weight: 600;
+      }
+
+      .bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .text {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: #fff;
+        border-radius: 8px;
+        padding: 10px;
+      }
+
+      .code {
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #1f292f;
+        background: #151c20;
+        color: #e9f0f5;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font:
+          500 12px/1.5 "IBM Plex Mono",
+          ui-monospace,
+          monospace;
+      }
+
+      .btn {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 8px 11px;
+        cursor: pointer;
+      }
+
+      .btn[data-tone="brand"] {
+        border-color: var(--brand);
+        background: var(--brand);
+        color: #fff;
+      }
+
+      .btn[data-tone="accent"] {
+        border-color: var(--brand-2);
+        background: var(--brand-2);
+        color: #fff;
+      }
+
+      .note {
+        margin-top: 10px;
+        color: var(--ink-soft);
+        font-size: 13px;
+      }
+
+      .ok {
+        color: var(--ok);
+      }
+
+      .warn {
+        color: var(--warn);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <section class="hero">
+        <h1 id="title">OpenCode Safe Update Console</h1>
+        <p class="sub" id="subtitle"></p>
+
+        <div class="row" id="lang-row"></div>
+        <div class="row" id="os-row"></div>
+      </section>
+
+      <section class="grid" id="action-cards"></section>
+
+      <section class="controls">
+        <div class="panel">
+          <h2 id="builder-title"></h2>
+
+          <p class="label" id="mode-label"></p>
+          <div class="bar" id="mode-row"></div>
+
+          <p class="label" id="action-label"></p>
+          <div class="bar" id="action-row"></div>
+
+          <div id="restore-wrap" style="display: none">
+            <p class="label" id="restore-label"></p>
+            <input id="restore-path" class="text" placeholder="/path/to/backup.tar.gz" />
+          </div>
+
+          <pre class="code" id="command"></pre>
+          <div class="bar">
+            <button class="btn" data-tone="brand" id="copy-btn"></button>
+            <a class="btn" data-tone="accent" id="download-btn" href="#"></a>
+            <a class="btn" id="checksum-btn" href="/scripts/checksums.txt" target="_blank" rel="noreferrer"></a>
+          </div>
+          <p class="note" id="safety-note"></p>
+          <p class="note" id="copy-result"></p>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const dict = {
+        en: {
+          title: "OpenCode Safe Update Console",
+          subtitle:
+            "Generate secure commands for backup, safe cleanup, restore, and status checks across Windows, macOS, and Linux.",
+          cards: [
+            ["Safe Update", "Runs backup first, then safe cleanup of rebuildable data."],
+            ["Backup", "Saves chat history, model config, and auth credentials."],
+            ["Restore", "Restores from a backup folder or archive and creates a safety snapshot."],
+            ["Status", "Shows detected paths and whether critical files are present."],
+          ],
+          builder: "Command Builder",
+          mode: "Mode",
+          action: "Action",
+          restore: "Backup Path",
+          copy: "Copy Command",
+          download: "Download Script",
+          checksums: "View Checksums",
+          copied: "Command copied to clipboard.",
+          safety:
+            "Protected: opencode.db, storage history, auth.json, config files. Cleanup removes only cache/log/tmp/worktree.",
+          strict: "Strict (Recommended)",
+          quick: "Quick",
+        },
+        pt: {
+          title: "Console de Atualizacao Segura OpenCode",
+          subtitle:
+            "Gere comandos seguros para backup, limpeza segura, restauracao e status em Windows, macOS e Linux.",
+          cards: [
+            ["Update Seguro", "Executa backup primeiro e depois limpeza segura de dados reconstruiveis."],
+            ["Backup", "Salva historico de chat, configuracao de modelos e credenciais de auth."],
+            ["Restore", "Restaura de pasta/arquivo de backup e cria snapshot de seguranca."],
+            ["Status", "Mostra caminhos detectados e se arquivos criticos existem."],
+          ],
+          builder: "Gerador de Comando",
+          mode: "Modo",
+          action: "Acao",
+          restore: "Caminho do Backup",
+          copy: "Copiar Comando",
+          download: "Baixar Script",
+          checksums: "Ver Checksums",
+          copied: "Comando copiado para a area de transferencia.",
+          safety:
+            "Protegido: opencode.db, storage, auth.json, configs. A limpeza remove apenas cache/log/tmp/worktree.",
+          strict: "Estrito (Recomendado)",
+          quick: "Rapido",
+        },
+      }
+
+      const state = {
+        lang: "pt",
+        os: detectOS(),
+        mode: "strict",
+        action: "update",
+      }
+
+      function detectOS() {
+        const ua = navigator.userAgent.toLowerCase()
+        if (ua.includes("win")) return "windows"
+        if (ua.includes("mac")) return "mac"
+        return "linux"
+      }
+
+      function t(key) {
+        return dict[state.lang][key]
+      }
+
+      function mkPills(target, items, current, onPick) {
+        target.innerHTML = ""
+        items.forEach((item) => {
+          const btn = document.createElement("button")
+          btn.className = "pill"
+          btn.dataset.active = String(item.value === current)
+          btn.textContent = item.label
+          btn.onclick = () => onPick(item.value)
+          target.appendChild(btn)
+        })
+      }
+
+      function renderCards() {
+        const cards = document.getElementById("action-cards")
+        cards.innerHTML = ""
+        t("cards").forEach(([title, body]) => {
+          const item = document.createElement("article")
+          item.className = "card"
+          item.innerHTML = `<h3>${title}</h3><p>${body}</p>`
+          cards.appendChild(item)
+        })
+      }
+
+      function buildCommand() {
+        const base = window.location.origin
+        const action = state.action
+        const restorePath = document.getElementById("restore-path").value.trim()
+
+        if (state.os === "windows") {
+          const file = "$tmp\\opencode-safe.ps1"
+          const fromArg = action === "restore" ? ` -From "${restorePath || "C:\\path\\to\\backup.zip"}"` : ""
+          if (state.mode === "quick") {
+            return [
+              `$tmp=Join-Path $env:TEMP ('opencode-safe-'+[guid]::NewGuid())`,
+              `New-Item -ItemType Directory -Path $tmp | Out-Null`,
+              `Invoke-WebRequest "${base}/scripts/opencode-safe.ps1" -OutFile "${file}"`,
+              `& "${file}" ${toPsAction(action)} -Yes${fromArg}`,
+            ].join("; ")
+          }
+          return [
+            `$base='${base}'`,
+            `$tmp=Join-Path $env:TEMP ('opencode-safe-'+[guid]::NewGuid())`,
+            `New-Item -ItemType Directory -Path $tmp | Out-Null`,
+            `Invoke-WebRequest "$base/scripts/opencode-safe.ps1" -OutFile "${file}"`,
+            `Invoke-WebRequest "$base/scripts/checksums.txt" -OutFile "$tmp\\checksums.txt"`,
+            `$expected=(Select-String -Path "$tmp\\checksums.txt" -Pattern 'opencode-safe.ps1').Line.Split(' ')[0].ToLower()`,
+            `$actual=(Get-FileHash "${file}" -Algorithm SHA256).Hash.ToLower()`,
+            `if($actual -ne $expected){ throw 'Checksum mismatch' }`,
+            `& "${file}" ${toPsAction(action)} -Yes${fromArg}`,
+          ].join("; ")
+        }
+
+        const fromArg = action === "restore" ? ` --from "${restorePath || "/path/to/backup.tar.gz"}"` : ""
+        if (state.mode === "quick") {
+          return `curl -fsSL ${base}/scripts/opencode-safe.sh | bash -s -- ${action} --yes${fromArg}`
+        }
+
+        return [
+          `tmpdir="$(mktemp -d)"`,
+          `cd "$tmpdir"`,
+          `curl -fsSLO ${base}/scripts/opencode-safe.sh`,
+          `curl -fsSLO ${base}/scripts/checksums.txt`,
+          `if command -v sha256sum >/dev/null 2>&1; then sha256sum -c checksums.txt --ignore-missing; else shasum -a 256 -c checksums.txt; fi`,
+          `bash opencode-safe.sh ${action} --yes${fromArg}`,
+        ].join(" && ")
+      }
+
+      function toPsAction(action) {
+        return action
+      }
+
+      function refresh() {
+        document.documentElement.lang = state.lang === "pt" ? "pt-BR" : "en"
+        document.getElementById("title").textContent = t("title")
+        document.getElementById("subtitle").textContent = t("subtitle")
+        document.getElementById("builder-title").textContent = t("builder")
+        document.getElementById("mode-label").textContent = t("mode")
+        document.getElementById("action-label").textContent = t("action")
+        document.getElementById("restore-label").textContent = t("restore")
+        document.getElementById("copy-btn").textContent = t("copy")
+        document.getElementById("download-btn").textContent = t("download")
+        document.getElementById("checksum-btn").textContent = t("checksums")
+        document.getElementById("safety-note").textContent = t("safety")
+
+        renderCards()
+
+        mkPills(
+          document.getElementById("lang-row"),
+          [
+            { value: "pt", label: "PT-BR" },
+            { value: "en", label: "EN" },
+          ],
+          state.lang,
+          (value) => {
+            state.lang = value
+            refresh()
+          },
+        )
+
+        mkPills(
+          document.getElementById("os-row"),
+          [
+            { value: "windows", label: "Windows" },
+            { value: "mac", label: "macOS" },
+            { value: "linux", label: "Linux" },
+          ],
+          state.os,
+          (value) => {
+            state.os = value
+            refresh()
+          },
+        )
+
+        mkPills(
+          document.getElementById("mode-row"),
+          [
+            { value: "strict", label: t("strict") },
+            { value: "quick", label: t("quick") },
+          ],
+          state.mode,
+          (value) => {
+            state.mode = value
+            refresh()
+          },
+        )
+
+        mkPills(
+          document.getElementById("action-row"),
+          [
+            { value: "update", label: "update" },
+            { value: "backup", label: "backup" },
+            { value: "cleanup", label: "cleanup" },
+            { value: "restore", label: "restore" },
+            { value: "status", label: "status" },
+          ],
+          state.action,
+          (value) => {
+            state.action = value
+            refresh()
+          },
+        )
+
+        document.getElementById("restore-wrap").style.display = state.action === "restore" ? "block" : "none"
+        document.getElementById("command").textContent = buildCommand()
+
+        document.getElementById("download-btn").href =
+          state.os === "windows" ? "/scripts/opencode-safe.ps1" : "/scripts/opencode-safe.sh"
+      }
+
+      document.getElementById("restore-path").addEventListener("input", () => {
+        document.getElementById("command").textContent = buildCommand()
+      })
+
+      document.getElementById("copy-btn").addEventListener("click", async () => {
+        const text = document.getElementById("command").textContent
+        await navigator.clipboard.writeText(text)
+        const out = document.getElementById("copy-result")
+        out.textContent = t("copied")
+        out.className = "note ok"
+      })
+
+      refresh()
+    </script>
+  </body>
+</html>

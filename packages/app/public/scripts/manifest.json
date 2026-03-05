@@ -1,0 +1,11 @@
+{
+  "name": "opencode-safe",
+  "version": "1.0.0",
+  "updated_at": "2026-03-05",
+  "scripts": {
+    "linux_macos": "/scripts/opencode-safe.sh",
+    "windows": "/scripts/opencode-safe.ps1"
+  },
+  "checksums": "/scripts/checksums.txt",
+  "page": "/safe/"
+}
